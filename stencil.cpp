@@ -115,11 +115,13 @@ inline void shift1Reverse(__m256 &a, __m256 &b, __m256 soluce)
 	
 	auto blend2 = _mm256_blend_ps (b, permute2f128, 0x01);
 	
-	_mm256_store_ps(&tab[i*LENGTH_TEST+j],blend1_2);
-	//_mm256_store_ps(&tab[i*LENGTH_TEST+(j+8)],blend2);
+	_mm256_store_ps(&v_tmp[i*N+j],blend1_2);
+	_mm256_store_ps(&v_tmp[i*N+(j+8)],blend2);
 	
 	return blend2;
 }
+
+
 /*******************************************************************************/
 
 /**
