@@ -23,7 +23,6 @@ void version_scalaire()
 	v_tmp = v;
 	
 	auto start = std::chrono::system_clock::now();
-	for(int x=0;x<1000;x++){
 		#pragma omp parallel for
 		for(std::size_t i=1;i<N-1; i++)
 		{
@@ -49,7 +48,6 @@ void version_scalaire()
 			}
 			
 		}
-	}
 	v = v_tmp;
 	auto stop = std::chrono::system_clock::now();
 	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count() << "ms"<< std::endl;	
@@ -96,7 +94,7 @@ inline void shift1Reverse(__m256 &a, __m256 &b, __m256 soluce)
 
 /**
  * Pour la partie store
- * Actuellement même avec le store perso il est plus lent que le store U en terme de temps :( donc on ne l'utilise pas
+ * Actuellement même avec le store perso il est plus lent que le store U en terme de temps :( mais on a essayé
  * 
  * */
  
@@ -126,7 +124,6 @@ void version_mm256_avecLoadU_avecStoreU()
 	
 	auto start = std::chrono::system_clock::now();
 	
-	for(int x=0;x<1000;x++){
 		#pragma omp parallel for
 		for(std::size_t i=1;i<N-1; ++i)
 		{
@@ -185,7 +182,6 @@ void version_mm256_avecLoadU_avecStoreU()
 			
 		}
 		
-	}
 	v=v_tmp;
 	auto stop = std::chrono::system_clock::now();
 	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count() << "ms"<< std::endl;
@@ -201,7 +197,6 @@ void version_mm256_avecLoadU_sansStoreU()
 	
 	auto start = std::chrono::system_clock::now();
 	
-	for(int x=0;x<1000;x++){
 		#pragma omp parallel for
 		for(std::size_t i=1;i<N-1; ++i)
 		{
@@ -209,7 +204,7 @@ void version_mm256_avecLoadU_sansStoreU()
 			{
 				__m256 reste;
 				for(std::size_t k=0; k<N-8; k+=8)
-				{
+				{	
 					//celui en haut
 					auto l0 = _mm256_loadu_ps(&v[i*N2+(j-1)*N + k+1]);
 					
@@ -235,9 +230,9 @@ void version_mm256_avecLoadU_sansStoreU()
 					soluce = _mm256_add_ps(soluce, _mm256_mul_ps(lz0,lz0)); //soluce += lz0*lz0
 					soluce = _mm256_add_ps(soluce, _mm256_mul_ps(lz1,lz1));
 				
-				
 					//store dans le temporaire
-					if(k==0) reste = l1_1;
+					if(k==0)
+						reste = l1_1;
 					reste = storeShift1LFor3D(v_tmp,reste,l1_2,soluce,i,j,k);
 					
 				}
@@ -261,8 +256,6 @@ void version_mm256_avecLoadU_sansStoreU()
 			}
 			
 		}
-		
-	}
 	v=v_tmp;
 	auto stop = std::chrono::system_clock::now();
 	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count() << "ms"<< std::endl;
@@ -280,7 +273,6 @@ void version_mm256_sansLoadU_avecStoreU()
 	
 	auto start = std::chrono::system_clock::now();
 	
-	for(int x=0;x<1000;x++){
 		#pragma omp parallel for
 		for(std::size_t i=1;i<N-1; ++i)
 		{	
@@ -324,12 +316,6 @@ void version_mm256_sansLoadU_avecStoreU()
 				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l2_res,l2_res));
 				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(lz_res,lz_res));
 				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(lz1_res,lz1_res));
-				
-				
-				//store dans le temporaire
-				/*shift1Reverse(l1_1,l1_2,soluce);
-				_mm256_store_ps(&v_tmp[i*N],l1_1);
-				_mm256_store_ps(&v_tmp[i*N+8],l1_2);*/
 				
 				_mm256_storeu_ps(&v_tmp[i*N2+j*N+1],soluce);
 				
@@ -378,19 +364,8 @@ void version_mm256_sansLoadU_avecStoreU()
 					soluce = _mm256_add_ps(soluce, _mm256_mul_ps(lz1_res,lz1_res));
 					
 					
-					/**Partie avec juste ADD pour vérifier**/
-					/*soluce = _mm256_add_ps(l0_res, l1_1);
-					soluce = _mm256_add_ps(soluce, l1_res_shift2);
-					soluce = _mm256_add_ps(soluce, l1_res_shift1);
-					soluce = _mm256_add_ps(soluce, l2_res);*/
-					
-					
 					//store dans le temporaire
 					_mm256_storeu_ps(&v_tmp[i*N2+j*N+k+1],soluce);
-					
-					/*shift1Reverse(l1_1,l1_2,soluce);
-					_mm256_store_ps(&v_tmp[i*N+j],l1_1);
-					_mm256_store_ps(&v_tmp[i*N+(j+8)],l1_2);*/
 					
 				}
 				//Pour les 6 derniers valeurs de la ligne
@@ -416,8 +391,7 @@ void version_mm256_sansLoadU_avecStoreU()
 			
 			
 		}
-		
-	}
+
 	v=v_tmp;
 	
 	auto stop = std::chrono::system_clock::now();
@@ -438,7 +412,6 @@ void version_mm256_sansLoadU_sansStoreU()
 	
 	auto start = std::chrono::system_clock::now();
 	
-	for(int x=0;x<1000;x++){
 		#pragma omp parallel for
 		for(std::size_t i=1;i<N-1; ++i)
 		{	
@@ -474,7 +447,7 @@ void version_mm256_sansLoadU_sansStoreU()
 				
 				//calcul
 				/**Partie avec FMA **/
-				
+				//6 FMA
 				auto tmp1 = _mm256_mul_ps(l0_res,l0_res);
 				auto soluce = _mm256_add_ps(tmp1, _mm256_mul_ps(l1_1,l1_1));
 				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l1_res_shift2,l1_res_shift2));
@@ -485,7 +458,7 @@ void version_mm256_sansLoadU_sansStoreU()
 				
 				
 				//store dans le temporaire
-				auto reste = storeShift1LFor(v_tmp,l1_1,l1_2,soluce,i,j,k);
+				auto reste = storeShift1LFor3D(v_tmp,l1_1,l1_2,soluce,i,j,0);
 				
 				//On n'a plus qu'a continuer
 				for(std::size_t k=8;k<N-8; k+=8)
@@ -566,7 +539,6 @@ void version_mm256_sansLoadU_sansStoreU()
 			
 		}
 		
-	}
 	v=v_tmp;
 	
 	auto stop = std::chrono::system_clock::now();

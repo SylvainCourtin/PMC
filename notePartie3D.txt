@@ -1,3 +1,6 @@
+
+La partie avec 1000 itérations n'a pas été faite pour la 3D => car trop lent
+
 Partie 3D => g++ -std=c++11 stencil3D.cpp -o stencil -O3 -fopenmp -march=native -I ~/Modèles/boost_1_66_0
 
 export OMP_NUM_THREADS=4
@@ -49,7 +52,7 @@ version avec les _mm256 sans loadu
 version avec les _mm256 avec loadu
 242ms
 
-g++ -std=c++11 stencil3D.cpp -o stencil -march=native -I /home/etud/o2121076/Modèles/boost_1_66_0
+g++ -std=c++11 stencil3D.cpp -o stencil -march=native -I ~/Modèles/boost_1_66_0
 version classic:
 4999ms
 version avec les _mm256 sans loadu
@@ -57,39 +60,4 @@ version avec les _mm256 sans loadu
 version avec les _mm256 avec loadu
 1354ms
 
-g++ -std=c++11 stencil3D.cpp -o stencil -O3 -fopenmp -march=native -I ~/Modèles/boost_1_66_0
-
-Avec 1000 itérations :
-
-export OMP_NUM_THREADS=4
-version classic:
-151526ms
-version avec les _mm256 sans loadu
-153462ms
-version avec les _mm256 avec loadu
-153342ms
-
-export OMP_NUM_THREADS=3
-version classic:
-151541ms
-version avec les _mm256 sans loadu
-153050ms
-version avec les _mm256 avec loadu
-156338ms
-
-export OMP_NUM_THREADS=2
-version classic:
-148645ms
-version avec les _mm256 sans loadu
-149134ms
-version avec les _mm256 avec loadu
-148128ms
-
-export OMP_NUM_THREADS=1
-version classic:
-158759ms
-version avec les _mm256 sans loadu
-180012ms
-version avec les _mm256 avec loadu
-208543ms
 

@@ -225,7 +225,7 @@ void version_mm256_avecLoadU_sansStoreU()
 				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l2,l2));
 				
 				//store dans le temporaire
-				if(k==0) reste = l1_1;
+				if(j==0) reste = l1_1;
 				reste = storeShift1LFor(v_tmp,reste,l1_2,soluce,i,j);
 				
 				
@@ -496,9 +496,18 @@ int main()
 {	
 	std::cout << "version classic:\n";
 	version_scalaire();
-	std::cout << "version avec les _mm256 sans loadu\n";
-	version_mm256_sansLoadU();
-	std::cout << "version avec les _mm256 avec loadu\n";
-	version_mm256_avecLoadU();
+	
+	std::cout << "version avec les _mm256 sans loadu sans storeu\n";
+	version_mm256_sansLoadU_sansStoreU();
+	
+	std::cout << "version avec les _mm256 avec loadu sans storeu\n";
+	version_mm256_avecLoadU_sansStoreU();
+	
+	
+	std::cout << "version avec les _mm256 sans loadu avec storeu\n";
+	version_mm256_avecLoadU_sansStoreU();
+	
+	std::cout << "version avec les _mm256 avec loadu avec storeu\n";
+	version_mm256_avecLoadU_avecStoreU();
 	return 0;
 }
