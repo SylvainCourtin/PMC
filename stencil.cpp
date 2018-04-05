@@ -103,6 +103,7 @@ inline void shift1Reverse(__m256 &a, __m256 &b, __m256 soluce)
 
 /**
  * Pour la partie store
+ * Actuellement même avec le store perso il est plus lent que le store U en terme de temps :( donc on ne l'utilise pas
  * 
  * */
  
@@ -127,7 +128,7 @@ inline void shift1Reverse(__m256 &a, __m256 &b, __m256 soluce)
 /**
  * temps avec -O3 ~110ms | sans -O3 
  * */
-void version_mm256_avecLoadU()
+void version_mm256_avecLoadU_avecStoreU()
 {
 	vec v(N*N,1.0f);
 	auto v_tmp = v; //copie
@@ -188,10 +189,75 @@ void version_mm256_avecLoadU()
 }
 
 /**
+ * temps avec -O3 ~110ms | sans -O3 
+ * */
+void version_mm256_avecLoadU_sansStoreU()
+{
+	vec v(N*N,1.0f);
+	auto v_tmp = v; //copie
+	
+	auto start = std::chrono::system_clock::now();
+	
+	for(int x=0;x<1000;x++)
+	{
+		#pragma omp parallel for
+		for(std::size_t i=1;i<N-1; ++i)
+		{
+			__m256 reste;
+			for(std::size_t j=0;j<N-8; j+=8)
+			{
+				//celui au dessus
+				auto l0 = _mm256_loadu_ps(&v[(i-1)*N+1+j]);
+				
+				//Celui du centre
+				auto l1_1 = _mm256_loadu_ps(&v[i*N+j]);
+				auto l1_2 = _mm256_loadu_ps(&v[i*N+1+j]);
+				auto l1_3 = _mm256_loadu_ps(&v[i*N+2+j]);
+				
+				//celui en dessous
+				auto l2 = _mm256_loadu_ps(&v[(i+1)*N+1+j]);
+				
+				//calcul
+				auto tmp1 = _mm256_mul_ps(l0,l0);
+				auto soluce = _mm256_add_ps(tmp1, _mm256_mul_ps(l1_1,l1_1));
+				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l1_2,l1_2));
+				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l1_3,l1_3));
+				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l2,l2));
+				
+				//store dans le temporaire
+				if(k==0) reste = l1_1;
+				reste = storeShift1LFor(v_tmp,reste,l1_2,soluce,i,j);
+				
+				
+			}
+			//Pour les 6 derniers valeurs de la ligne
+			for(std::size_t j=N-8;j<N-1;j++)
+			{
+				float h(0),b(0),g(0),d(0);
+				
+				h=v[(i)* N+j-1];
+				b=v[(i)* N+j+1];
+				g=v[(i-1)* N+j];
+				d=v[(i+1)* N+j];
+				
+				float tmp = h*h+b*b+g*g+d*d;
+				
+				v_tmp[i*N+j] = (v[i*N+j]*v[i*N+j] + tmp) ;
+			}
+		}
+	}
+	v=v_tmp;
+	auto stop = std::chrono::system_clock::now();
+	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count() << "ms"<< std::endl;
+	
+	//affiche2D(v);
+}
+
+/**
  * Version avec -O3 ~100ms | sans -O3 ~1200ms
  * 
  * */
-void version_mm256_sansLoadU()
+void version_mm256_sansLoadU_avecStoreU()
 {
 	vec v(N*N,1.0f);
 	auto v_tmp = v; //copie
@@ -280,6 +346,124 @@ void version_mm256_sansLoadU()
 				//store dans le temporaire
 				_mm256_storeu_ps(&v_tmp[i*N+(j+1)],soluce);
 				//rst = storeShift1LFor(v_tmp,rst,l1_2,soluce,i,j);
+				
+				
+			}
+			//Pour les 6 derniers valeurs de la ligne
+			for(std::size_t j=N-8;j<N-1;j++)
+			{
+				float h(0),b(0),g(0),d(0);
+				
+				h=v[(i)* N+j-1];
+				b=v[(i)* N+j+1];
+				g=v[(i-1)* N+j];
+				d=v[(i+1)* N+j];
+				
+				float tmp = h*h+b*b+g*g+d*d;
+				
+				v_tmp[i*N+j] = (v[i*N+j]*v[i*N+j] + tmp) ;
+			}
+		}
+		
+	}
+	v=v_tmp;
+	auto stop = std::chrono::system_clock::now();
+	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count() << "ms"<< std::endl;
+	
+	//affiche2D(v);
+	
+}
+
+/**
+ * Version avec -O3 ~100ms | sans -O3 ~1200ms
+ * 
+ * */
+void version_mm256_sansLoadU_sansStoreU()
+{
+	vec v(N*N,1.0f);
+	auto v_tmp = v; //copie
+	auto start = std::chrono::system_clock::now();
+	
+	for(int x=0;x<1000;x++){
+		
+		#pragma omp parallel for
+		for(std::size_t i=1;i<N-1; ++i)
+		{	//Pour chaque nouvelle ligne on charge 6
+			
+			//Celui du centre
+			auto l1_1 = _mm256_load_ps(&v[i*N]);
+			auto l1_2 = _mm256_load_ps(&v[i*N+8]);
+			auto l1_res_shift2 = shift2(l1_1,l1_2);
+			auto l1_res_shift1 = shift1(l1_1,l1_2);
+			
+			//celui au dessus
+			auto l0_1 = _mm256_load_ps(&v[(i-1)*N]);
+			auto l0_2 = _mm256_load_ps(&v[(i-1)*N+8]);
+			auto l0_res = shift1(l0_1,l0_2);
+			
+			//celui en dessous
+			auto l2_1 = _mm256_load_ps(&v[(i+1)*N]);
+			auto l2_2 = _mm256_load_ps(&v[(i+1)*N+8]);
+			auto l2_res = shift1(l2_1,l2_2);
+			
+			//calcul
+			/**Partie avec juste ADD pour vérifier**/
+			/*auto soluce = _mm256_add_ps(l0_res, l1_1);
+			soluce = _mm256_add_ps(soluce, l1_res_shift2);
+			soluce = _mm256_add_ps(soluce, l1_res_shift1);
+			soluce = _mm256_add_ps(soluce, l2_res);*/
+			/**Partie avec FMA **/
+			
+			auto tmp1 = _mm256_mul_ps(l0_res,l0_res);
+			auto soluce = _mm256_add_ps(tmp1, _mm256_mul_ps(l1_1,l1_1));
+			soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l1_res_shift2,l1_res_shift2));
+			soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l1_res_shift1,l1_res_shift1));
+			soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l2_res,l2_res));
+			
+			
+			//Recupere le 8eme bit de la soluce pour ne pas le perdre
+			auto reste = storeShift1LFor(v_tmp,l1_1,l1_2,soluce,i,0);			
+			
+			//On n'a plus qu'a continuer
+			for(std::size_t j=8;j<N-8; j+=8)
+			{
+				//on copie les précédents
+				l1_1 = l1_2;
+				l0_1 = l0_2;
+				l2_1 = l2_2;
+				//On charge les 3 suivants
+				l1_2 = _mm256_load_ps(&v[i*N + (j+8)]);
+				l0_2 = _mm256_load_ps(&v[(i-1)*N + (j+8)]);
+				l2_2 = _mm256_load_ps(&v[(i+1)*N + (j+8)]);
+				
+				//les shifts nécessaires
+				l1_res_shift2 = shift2(l1_1,l1_2);
+				l1_res_shift1 = shift1(l1_1,l1_2);
+				
+				l0_res = shift1(l0_1,l0_2);
+				
+				l2_res = shift1(l2_1,l2_2);
+				
+				//calcul
+				
+				/**Partie avec FMA **/
+				
+				tmp1 = _mm256_mul_ps(l0_res,l0_res);
+				soluce = _mm256_add_ps(tmp1, _mm256_mul_ps(l1_1,l1_1));
+				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l1_res_shift2,l1_res_shift2));
+				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l1_res_shift1,l1_res_shift1));
+				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l2_res,l2_res));
+				
+				
+				/**Partie avec juste ADD pour vérifier**/
+				/*soluce = _mm256_add_ps(l0_res, l1_1);
+				soluce = _mm256_add_ps(soluce, l1_res_shift2);
+				soluce = _mm256_add_ps(soluce, l1_res_shift1);
+				soluce = _mm256_add_ps(soluce, l2_res);*/
+				
+				
+				//store dans le temporaire
+				reste = storeShift1LFor(v_tmp,reste,l1_2,soluce,i,j);
 				
 				
 			}
