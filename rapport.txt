@@ -1,0 +1,109 @@
+Courtin Sylvain
+Machado Thibault
+
+Rapport de programmation multicoeur pour le code Stencil.
+
+1) Introduction
+	La machine sera testé à chaque phase de test avec différent nombre de thread.
+	Les tests auront à chaque fois un temps en fonction de deux critères principaux :
+		- load ou loadu
+		- store ou storeu
+
+2) Tests de la machine pour quatre threads
+
+a) Stream :
+
+	-------------------------------------------------------------
+	This system uses 8 bytes per array element.
+	-------------------------------------------------------------
+	Number of Threads requested = 4
+	Number of Threads counted = 4
+	-------------------------------------------------------------
+	Function    Best Rate MB/s  Avg time     Min time     Max time
+	Copy:           22981.7     0.007588     0.006962     0.011138
+	Scale:          16052.8     0.011066     0.009967     0.015322
+	Add:            17251.3     0.014733     0.013912     0.015787
+	Triad:          16901.4     0.015591     0.014200     0.020703
+	-------------------------------------------------------------
+
+b) Tests :
+	A gauche les temps sans -fopenmp et à droite avec.
+	
+	Voici les temps obtenu pour la version 2D :
+	stencil 2D sans optimisation système
+	version classic								: 1289ms		|			4006ms
+	version _mm256 loadU / storeU :  252ms			|			 842ms
+	version _mm256 loadU / store	:  362ms			|			1222ms
+	version _mm256 load  / storeU :  368ms			|			1227ms
+	version _mm256 load  / store	:  460ms			|			1603ms
+			
+	stencil 2D avec optimisation -O2 :
+	stencil 2D sans optimisation système
+	version classic								: 74ms			|			273ms
+	version _mm256 loadU / storeU : 27ms			|			 86ms
+	version _mm256 loadU / store	: 34ms			|			112ms
+	version _mm256 load  / storeU : 35ms			|			112ms
+	version _mm256 load  / store	: 45ms			|			113ms
+	
+	stencil 2D avec optimisation -O3 :
+	stencil 2D sans optimisation système
+	version classic								: 36ms			|			 83ms
+	version _mm256 loadU / storeU : 28ms			|			 83ms
+	version _mm256 loadU / store	: 36ms			|			112ms
+	version _mm256 load  / storeU : 33ms			|			112ms
+	version _mm256 load  / store	: 34ms			|			111ms
+
+
+	Voici les temps obtenu pour la version 3D :
+	stencil 3D sans optimisation système
+	version classic								: 899ms			|			2738ms
+	version _mm256 loadU / storeU : 250ms			|			 732ms
+	version _mm256 loadU / store	: 302ms			|			 930ms
+	version _mm256 load  / storeU : 305ms			|			 936ms
+	version _mm256 load  / store	: 392ms			|			1267ms
+			
+	stencil 3D avec optimisation -O2 :
+	stencil 3D sans optimisation système
+	version classic								: 166ms			|			242ms
+	version _mm256 loadU / storeU : 154ms			|			127ms
+	version _mm256 loadU / store	: 162ms			|			151ms
+	version _mm256 load  / storeU : 162ms			|			151ms
+	version _mm256 load  / store	: 166ms			|			148ms
+	
+	stencil 3D avec optimisation -O3 :
+	stencil 3D sans optimisation système
+	version classic								: 153ms			|			130ms
+	version _mm256 loadU / storeU : 153ms			|			127ms
+	version _mm256 loadU / store	: 161ms			|			146ms
+	version _mm256 load  / storeU : 161ms			|			148ms
+	version _mm256 load  / store	: 164ms			|			148ms
+
+
+		BIS en x1000	
+	Voici les temps obtenu pour la version 3D :
+	stencil 3D sans optimisation système
+	version classic								:    895ms	|		   2743ms
+	version _mm256 loadU / storeU : 208657ms	|		 688009ms
+	version _mm256 loadU / store	: 260736ms	|		 891321ms
+	version _mm256 load  / storeU : 256059ms	|		 885110ms
+	version _mm256 load  / store	: 341817ms	|		1204169ms
+			
+	stencil 3D avec optimisation -O2 :
+	stencil 3D sans optimisation système
+	version classic								:    163ms	|			ms
+	version _mm256 loadU / storeU : 105751ms	|			ms
+	version _mm256 loadU / store	: 116296ms	|			ms
+	version _mm256 load  / storeU : 113746ms	|			ms
+	version _mm256 load  / store	: ms	|			ms
+	
+	stencil 3D avec optimisation -O3 :
+	stencil 3D sans optimisation système
+	version classic								: ms			|			ms
+	version _mm256 loadU / storeU : ms	|			ms
+	version _mm256 loadU / store	: ms	|			ms
+	version _mm256 load  / storeU : ms	|			ms
+	version _mm256 load  / store	: ms	|			ms
+
+
+
+

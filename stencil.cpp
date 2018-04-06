@@ -286,11 +286,6 @@ void version_mm256_sansLoadU_avecStoreU()
 			auto l2_res = shift1(l2_1,l2_2);
 			
 			//calcul
-			/**Partie avec juste ADD pour vérifier**/
-			/*auto soluce = _mm256_add_ps(l0_res, l1_1);
-			soluce = _mm256_add_ps(soluce, l1_res_shift2);
-			soluce = _mm256_add_ps(soluce, l1_res_shift1);
-			soluce = _mm256_add_ps(soluce, l2_res);*/
 			/**Partie avec FMA **/
 			
 			auto tmp1 = _mm256_mul_ps(l0_res,l0_res);
@@ -334,13 +329,6 @@ void version_mm256_sansLoadU_avecStoreU()
 				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l1_res_shift2,l1_res_shift2));
 				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l1_res_shift1,l1_res_shift1));
 				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l2_res,l2_res));
-				
-				
-				/**Partie avec juste ADD pour vérifier**/
-				/*soluce = _mm256_add_ps(l0_res, l1_1);
-				soluce = _mm256_add_ps(soluce, l1_res_shift2);
-				soluce = _mm256_add_ps(soluce, l1_res_shift1);
-				soluce = _mm256_add_ps(soluce, l2_res);*/
 				
 				
 				//store dans le temporaire
@@ -406,12 +394,6 @@ void version_mm256_sansLoadU_sansStoreU()
 			auto l2_2 = _mm256_load_ps(&v[(i+1)*N+8]);
 			auto l2_res = shift1(l2_1,l2_2);
 			
-			//calcul
-			/**Partie avec juste ADD pour vérifier**/
-			/*auto soluce = _mm256_add_ps(l0_res, l1_1);
-			soluce = _mm256_add_ps(soluce, l1_res_shift2);
-			soluce = _mm256_add_ps(soluce, l1_res_shift1);
-			soluce = _mm256_add_ps(soluce, l2_res);*/
 			/**Partie avec FMA **/
 			
 			auto tmp1 = _mm256_mul_ps(l0_res,l0_res);
@@ -453,14 +435,7 @@ void version_mm256_sansLoadU_sansStoreU()
 				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l1_res_shift2,l1_res_shift2));
 				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l1_res_shift1,l1_res_shift1));
 				soluce = _mm256_add_ps(soluce, _mm256_mul_ps(l2_res,l2_res));
-				
-				
-				/**Partie avec juste ADD pour vérifier**/
-				/*soluce = _mm256_add_ps(l0_res, l1_1);
-				soluce = _mm256_add_ps(soluce, l1_res_shift2);
-				soluce = _mm256_add_ps(soluce, l1_res_shift1);
-				soluce = _mm256_add_ps(soluce, l2_res);*/
-				
+								
 				
 				//store dans le temporaire
 				reste = storeShift1LFor(v_tmp,reste,l1_2,soluce,i,j);
@@ -497,17 +472,16 @@ int main()
 	std::cout << "version classic:\n";
 	version_scalaire();
 	
-	std::cout << "version avec les _mm256 sans loadu sans storeu\n";
-	version_mm256_sansLoadU_sansStoreU();
-	
-	std::cout << "version avec les _mm256 avec loadu sans storeu\n";
-	version_mm256_avecLoadU_sansStoreU();
-	
-	
-	std::cout << "version avec les _mm256 sans loadu avec storeu\n";
-	version_mm256_avecLoadU_sansStoreU();
-	
-	std::cout << "version avec les _mm256 avec loadu avec storeu\n";
+	std::cout << "\nversion avec les _mm256 loadU / storeU\n";
 	version_mm256_avecLoadU_avecStoreU();
+	
+	std::cout << "\nversion avec les _mm256 loadU / store\n";
+	version_mm256_avecLoadU_sansStoreU();
+	
+	std::cout << "\nversion avec les _mm256 load  / storeU\n";
+	version_mm256_avecLoadU_sansStoreU();
+	
+	std::cout << "\nversion avec les _mm256 load  / store\n";
+	version_mm256_sansLoadU_sansStoreU();
 	return 0;
 }

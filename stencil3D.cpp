@@ -123,7 +123,8 @@ void version_mm256_avecLoadU_avecStoreU()
 	auto v_tmp = v; //copie
 	
 	auto start = std::chrono::system_clock::now();
-	
+	for(int x=0;x<1000;x++)
+	{
 		#pragma omp parallel for
 		for(std::size_t i=1;i<N-1; ++i)
 		{
@@ -181,7 +182,7 @@ void version_mm256_avecLoadU_avecStoreU()
 			}
 			
 		}
-		
+		}
 	v=v_tmp;
 	auto stop = std::chrono::system_clock::now();
 	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count() << "ms"<< std::endl;
@@ -196,7 +197,8 @@ void version_mm256_avecLoadU_sansStoreU()
 	auto v_tmp = v; //copie
 	
 	auto start = std::chrono::system_clock::now();
-	
+	for(int x=0;x<1000;x++)
+	{
 		#pragma omp parallel for
 		for(std::size_t i=1;i<N-1; ++i)
 		{
@@ -256,6 +258,7 @@ void version_mm256_avecLoadU_sansStoreU()
 			}
 			
 		}
+	}
 	v=v_tmp;
 	auto stop = std::chrono::system_clock::now();
 	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count() << "ms"<< std::endl;
@@ -272,7 +275,8 @@ void version_mm256_sansLoadU_avecStoreU()
 	auto v_tmp = v; //copie
 	
 	auto start = std::chrono::system_clock::now();
-	
+	for(int x=0;x<1000;x++)
+	{
 		#pragma omp parallel for
 		for(std::size_t i=1;i<N-1; ++i)
 		{	
@@ -385,13 +389,9 @@ void version_mm256_sansLoadU_avecStoreU()
 					
 					v_tmp[i*N2+j*N+k] = (v[i*N2+j*N+k]*v[i*N2+j*N+k]  + tmp);
 				}
-				
-			}
-			
-			
-			
+			}	
 		}
-
+	}
 	v=v_tmp;
 	
 	auto stop = std::chrono::system_clock::now();
@@ -411,7 +411,8 @@ void version_mm256_sansLoadU_sansStoreU()
 	auto v_tmp = v; //copie
 	
 	auto start = std::chrono::system_clock::now();
-	
+	for(int x=0;x<1000;x++)
+	{
 		#pragma omp parallel for
 		for(std::size_t i=1;i<N-1; ++i)
 		{	
@@ -532,13 +533,9 @@ void version_mm256_sansLoadU_sansStoreU()
 					
 					v_tmp[i*N2+j*N+k] = (v[i*N2+j*N+k]*v[i*N2+j*N+k]  + tmp);
 				}
-				
-			}
-			
-			
-			
+			}	
 		}
-		
+	}
 	v=v_tmp;
 	
 	auto stop = std::chrono::system_clock::now();
@@ -551,17 +548,16 @@ int main()
 	std::cout << "version classic:\n";
 	version_scalaire();
 	
-	std::cout << "version avec les _mm256 sans loadu sans storeu\n";
-	version_mm256_sansLoadU_sansStoreU();
-	
-	std::cout << "version avec les _mm256 avec loadu sans storeu\n";
-	version_mm256_avecLoadU_sansStoreU();
-	
-	
-	std::cout << "version avec les _mm256 sans loadu avec storeu\n";
-	version_mm256_avecLoadU_sansStoreU();
-	
-	std::cout << "version avec les _mm256 avec loadu avec storeu\n";
+	std::cout << "\nversion avec les _mm256 loadU / storeU\n";
 	version_mm256_avecLoadU_avecStoreU();
+	
+	std::cout << "\nversion avec les _mm256 loadU / store\n";
+	version_mm256_avecLoadU_sansStoreU();
+	
+	std::cout << "\nversion avec les _mm256 load  / storeU\n";
+	version_mm256_avecLoadU_sansStoreU();
+	
+	std::cout << "\nversion avec les _mm256 load  / store\n";
+	version_mm256_sansLoadU_sansStoreU();
 	return 0;
 }
